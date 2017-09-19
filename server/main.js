@@ -10,7 +10,7 @@ import {
 var CryptoJS = require("crypto-js");
 
 client = new CoinStack('c7dbfacbdf1510889b38c01b8440b1', '10e88e9904f29c98356fd2d12b26de');
-client.endpoint = "13.124.21.0:8080";
+client.endpoint = "testchain.blocko.io";
 client.protocol = 'http://';
 
 Wallets = new Mongo.Collection('wallets');
@@ -56,20 +56,18 @@ Meteor.startup(() => {
 });
 
 Meteor.methods({
-  'getBalance'({
-    address
-  }) {
+  getBalance: function (address) {
     console.log('check balance: ' + address);
     var balance = CoinStack.Math.toBitcoin(client.getBalanceSync(address));
     console.log('check balance: ' + balance);
     return balance;
-  },
-  'getTxHistory'({
-    address
-  }) {
-    console.log('check balance: ' + address);
-    client.getTransactionsSync(address);
-    //console.log('check balance: ' + balance);
-    return balance;
-  }
+ },
+ getTxHistory: function (address) {
+  console.log('check balance: ' + address);
+  client.getTransactionsSync(address);
+  //console.log('check balance: ' + balance);
+  return balance;
+},
+
+
 });
