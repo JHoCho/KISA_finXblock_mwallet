@@ -69,5 +69,8 @@ Meteor.methods({
   return balance;
 },
 
+// TO-DO 
+// transactionBitcoin
+
 
 });
