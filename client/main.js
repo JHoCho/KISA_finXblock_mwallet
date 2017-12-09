@@ -10,6 +10,8 @@ import './main.html';
 Wallets = new Mongo.Collection('wallets');
 Price = new Mongo.Collection('price');
 client = new CoinStack('c7dbfacbdf1510889b38c01b8440b1', '10e88e9904f29c98356fd2d12b26de');
+client.endpoint = "testchain.blocko.io";
+client.protocol = 'http://';
 
 Template.home.onCreated(function helloOnCreated() {
   // counter starts at 0
@@ -45,14 +47,15 @@ Template.walletdetail.rendered = function () {
     this.qrloaded = true;
 
     var address = FlowRouter.getParam('walletAdderss');
-
+    console.log("주소"+address);
     var param = {
       address: address
     };
 
-    Meteor.call('getBalance', param, function (err, res) {
+    Meteor.call('getBalance', address, function (err, res) {
       if (!err) {
         Session.set(address + 'balance', res);
+        console.log("test"+res);
       }
     });
 
@@ -84,15 +87,28 @@ Template.walletdetail.helpers({
     return Price.findOne({_id:'btc_bithumb'}).price;
   }
 });
-
-
 Template.walletdetail.events({
-  "submit .new-task": function (event) {
-    event.preventDefault();
+  'submit form': function(event){ 
+    event.preventDefault(); 
     var bitcoin = event.target.text.value;
-    // var friendAddress = '';
-  
-    Meteor.call("transactionBitcoin", bitcoin);
+    var addr = event.target.addr.value;
+    var params = {
+      address : addr,
+      bitcoin : bitcoin
+    };
+    Meteor.call("addTask", params);
     event.target.text.value = "";
+    event.target.addr.value = "";
  },
 });
+ 
+//  "click button" (event) {
+//    console.log("test");
+//    addr = event.target.addr.value;
+//    // var friendAddress = '';
+//    var params = {
+//      address : addr,
+//      bitcoin : bitcoin
+//    };
+//    Meteor.call("addTask", param);
+//    console.log("들어가는가");

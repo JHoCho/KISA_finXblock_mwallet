@@ -8,6 +8,8 @@ import {
   HTTP
 } from 'meteor/http'
 var CryptoJS = require("crypto-js");
+var address= "1AMFa3eNQ1nAv7Ufnc6AugB3D8xzXhN3Ek";
+var privateKey ="KzDEX5tYQX7r8yW5qQixhJeEPG7HHwg4hp6mG8PY9guiGFD95YBC";
 
 client = new CoinStack('c7dbfacbdf1510889b38c01b8440b1', '10e88e9904f29c98356fd2d12b26de');
 client.endpoint = "testchain.blocko.io";
@@ -18,11 +20,12 @@ Price = new Mongo.Collection('price');
 
 Meteor.startup(() => {
   //console.log(ciphertext);
-
+  
   var walletsCnt = Wallets.find().count();
-
-  var privateKey = CoinStack.ECKey.createKey();
-  var address = CoinStack.ECKey.deriveAddress(privateKey);
+  var balance = CoinStack.Math.toBitcoin(client.getBalanceSync(address));
+  console.log('my balance: ' + balance);
+ // var privateKey = CoinStack.ECKey.createKey();
+ // var address = CoinStack.ECKey.deriveAddress(privateKey);
 
   if (walletsCnt == 0) {
     var documnet = {
@@ -56,11 +59,15 @@ Meteor.startup(() => {
 });
 
 Meteor.methods({
-  getBalance: function (address) {
-    console.log('check balance: ' + address);
+  getBalance: function (param) {
     var balance = CoinStack.Math.toBitcoin(client.getBalanceSync(address));
+    
     console.log('check balance: ' + balance);
     return balance;
+    // client.getBalance(fromaddress, 
+    //   function(err, balance) { 
+    //   console.log(CoinStack.Math.toBitcoin(balance) + 'BTC'); 
+    //   });
  },
  getTxHistory: function (address) {
   console.log('check balance: ' + address);
@@ -71,6 +78,31 @@ Meteor.methods({
 
 // TO-DO 
 // transactionBitcoin
+addTask:function(param){
+// server 트랜잭션 생성만 하는 코드.
+console.log("test1");
+console.log('check address: ' + param.address);
+console.log('send bitcoin: '+param.bitcoin);
 
-
+if(param.address!=null){
+  toAddress =param.address;
+};
+var txBuilder = client.createTransactionBuilder();
+    txBuilder.addOutput(toAddress, CoinStack.Math.toSatoshi(param.bitcoin));
+    txBuilder.setInput(address);
+    txBuilder.setFee(CoinStack.Math.toSatoshi("0.0001"));
+    console.log("test");
+    var tx = client.buildTransactionSync(txBuilder);
+    tx.sign(privateKey);
+    var rawSignedTx = tx.serialize();
+    console.log(rawSignedTx);
+    //트랜잭션 전송
+    try {
+      // send tx
+      client.sendTransactionSync(rawSignedTx);
+      console.log(toAddress+"로 전송 성공");
+    } catch (e) {
+      console.log("failed to send tx");
+  }
+},
 });
